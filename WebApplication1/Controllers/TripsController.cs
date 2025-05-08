@@ -10,6 +10,13 @@ public class TripsController(IDbService dbService) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetTripsAsync()
     {
-        return Ok(await dbService.GetTripsAsync());
+        try
+        {
+            return Ok(await dbService.GetTripsAsync());
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

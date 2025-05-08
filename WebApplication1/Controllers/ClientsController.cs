@@ -1,5 +1,5 @@
-﻿using System.Data.Common;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTOs;
 using WebApplication1.Exceptions;
 using WebApplication1.Services;
 
@@ -20,10 +20,26 @@ public class ClientsController(IDbService dbService) : ControllerBase
         {
             return NotFound(ex.Message);
         }
-        catch (Exception e)
+        catch (NoTripsException ex)
         {
-            return BadRequest(e);
+            return NotFound(ex.Message);
         }
-        
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateClientAsync([FromBody] ClientCreateDto clientCreateDto)
+    {
+        try
+        {
+            return Ok($"Created client with id: {await dbService.CreateClientAsync(clientCreateDto)}");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

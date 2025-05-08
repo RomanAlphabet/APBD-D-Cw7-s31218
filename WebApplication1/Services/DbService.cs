@@ -9,6 +9,7 @@ public interface IDbService
 {
     public Task<IEnumerable<TripsGetDto>> GetTripsAsync();
     public Task<IEnumerable<ClientTripsDto>> GetClientTripsAsync(int id);
+    public Task<int> CreateClientAsync(ClientCreateDto clientCreateDto);
 }
 
 public class DbService(IConfiguration conf) : IDbService
@@ -119,5 +120,26 @@ public class DbService(IConfiguration conf) : IDbService
         }
 
         return tripsList;
+    }
+
+    public async Task<int> CreateClientAsync(ClientCreateDto clientCreateDto)
+    {
+            await using var connection = await GetConnectionAsync();
+            var sql = """
+                      insert into Client (FirstName,LastName,Email,Telephone,Pesel)
+                      output inserted.Id
+                      values (@FirstName,@LastName,@Email,@Telephone,@Pesel);
+                      """;
+
+            await using var command = new SqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("@FirstName", clientCreateDto.FirstName);
+            command.Parameters.AddWithValue("@LastName", clientCreateDto.LastName);
+            command.Parameters.AddWithValue("@Email", clientCreateDto.Email);
+            command.Parameters.AddWithValue("@Telephone", clientCreateDto.Telephone);
+            command.Parameters.AddWithValue("@Pesel", clientCreateDto.Pesel);
+
+            await connection.OpenAsync();
+            return Convert.ToInt32(await command.ExecuteScalarAsync());
     }
 }
